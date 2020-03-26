@@ -32,10 +32,10 @@
 
 namespace Monitors
 {
-  	//! Insert short task description here.
-  	//!
-  	//! Insert explanation on task behaviour here.
-  	//! @author Llewellyn-Fernandes
+	//! Insert short task description here.
+	//!
+	//! Insert explanation on task behaviour here.
+	//! @author Llewellyn-Fernandes
 	namespace WifiLog
 	{
 		using DUNE_NAMESPACES;
@@ -48,12 +48,12 @@ namespace Monitors
 
 		struct Task: public DUNE::Tasks::Task
 		{
-      		//! Constructor.
-      		//! @param[in] name task name.
-      		//! @param[in] ctx context.
-      		//! Task arguments
+			//! Constructor.
+			//! @param[in] name task name.
+			//! @param[in] ctx context.
+			//! Task arguments
 			Arguments m_args;
-      		//! UDP socket.
+			//! UDP socket.
 			DUNE::Network::UDPSocket* m_sock = NULL;
 			//! UDP message buffer.
 			uint8_t m_buf[1024];
@@ -69,7 +69,7 @@ namespace Monitors
 
 			}
 
-      		//! Update internal state with new parameter values.
+			//! Update internal state with new parameter values.
 			void
 			onUpdateParameters(void)
 			{
@@ -82,14 +82,14 @@ namespace Monitors
 				}
 			}
 
-      		//! Acquire resources.
+			//! Acquire resources.
 			void
 			onResourceAcquisition(void)
 			{
 				m_sock = new DUNE::Network::UDPSocket();
 			}
 
-      		//! Initialize resources.
+			//! Initialize resources.
 			void
 			onResourceInitialization(void)
 			{
@@ -99,7 +99,7 @@ namespace Monitors
 				}
 			}
 
-      		//! Release resources.
+			//! Release resources.
 			void
 			onResourceRelease(void)
 			{
@@ -136,7 +136,7 @@ namespace Monitors
 				}
 			}
 
-      		//! Main loop.
+			//! Main loop.
 			void
 			onMain(void)
 			{
