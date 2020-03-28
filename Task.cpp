@@ -43,7 +43,6 @@ namespace Monitors
 		{
 			//! Socket to bind to
 			uint16_t sock_addr;
-
 		};
 
 		struct Task: public DUNE::Tasks::Task
@@ -66,16 +65,15 @@ namespace Monitors
 				.minimumValue("0")
 				.maximumValue("65535")
 				.description("UDP data port to listen");
-
 			}
 
 			//! Update internal state with new parameter values.
 			void
 			onUpdateParameters(void)
 			{
-				if(m_sock)
+				if (m_sock)
 				{
-					if(paramChanged(m_args.sock_addr))
+					if (paramChanged(m_args.sock_addr))
 					{
 						throw RestartNeeded(DTR("restarting to change UDP Port"), 1);
 					}
@@ -93,7 +91,7 @@ namespace Monitors
 			void
 			onResourceInitialization(void)
 			{
-				if(m_sock)
+				if (m_sock)
 				{
 					m_sock->bind(m_args.sock_addr);
 				}
@@ -103,34 +101,28 @@ namespace Monitors
 			void
 			onResourceRelease(void)
 			{
-				if(m_sock)
-				{
-					m_sock->~UDPSocket();
-				}
+				Memory::clear(m_sock);
 			}
 
 			void
 			checkIncomingData()
 			{
 				Address dummy;
-
 				try
 				{
 					if (Poll::poll(*m_sock, 0.01))
 					{
 						size_t n = m_sock->read(m_buf, sizeof(m_buf), &dummy);
 
-						if(n > 0)
+						if (n > 0)
 						{
-							IMC::DevDataText* msg = new DevDataText();
-							msg->value = (char *)m_buf;
+							IMC::DevDataText msg;
+							msg.value = std::string((char *) m_buf, n);
 							dispatch(msg);
-							delete msg;
-							memset(m_buf, 0 , sizeof(m_buf));
 						}
 					}
 				}
-				catch(std::runtime_error& e)
+				catch (std::runtime_error& e)
 				{
 					this->err(DTR("Read error: %s"), e.what());
 				}
