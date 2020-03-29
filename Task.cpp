@@ -32,114 +32,114 @@
 
 namespace Monitors
 {
-	//! Insert short task description here.
-	//!
-	//! Insert explanation on task behaviour here.
-	//! @author Llewellyn-Fernandes
-	namespace WifiLog
-	{
-		using DUNE_NAMESPACES;
-		struct Arguments
-		{
-			//! Socket to bind to
-			uint16_t sock_addr;
-		};
+  //! Insert short task description here.
+  //!
+  //! Insert explanation on task behaviour here.
+  //! @author Llewellyn-Fernandes
+  namespace WifiLog
+  {
+    using DUNE_NAMESPACES;
+    struct Arguments
+    {
+      //! Socket to bind to
+      uint16_t sock_addr;
+    };
 
-		struct Task: public DUNE::Tasks::Task
-		{
-			//! Constructor.
-			//! @param[in] name task name.
-			//! @param[in] ctx context.
-			//! Task arguments
-			Arguments m_args;
-			//! UDP socket.
-			DUNE::Network::UDPSocket* m_sock = NULL;
-			//! UDP message buffer.
-			uint8_t m_buf[1024];
+    struct Task: public DUNE::Tasks::Task
+    {
+      //! Constructor.
+      //! @param[in] name task name.
+      //! @param[in] ctx context.
+      //! Task arguments
+      Arguments m_args;
+      //! UDP socket.
+      DUNE::Network::UDPSocket* m_sock = NULL;
+      //! UDP message buffer.
+      uint8_t m_buf[1024];
 
-			Task(const std::string& name, Tasks::Context& ctx):
-			DUNE::Tasks::Task(name, ctx)
-			{
-				param("UDP Data Port", m_args.sock_addr)
-				.defaultValue("11223")
-				.minimumValue("0")
-				.maximumValue("65535")
-				.description("UDP data port to listen");
-			}
+      Task(const std::string& name, Tasks::Context& ctx):
+      DUNE::Tasks::Task(name, ctx)
+      {
+        param("UDP Data Port", m_args.sock_addr)
+        .defaultValue("11223")
+        .minimumValue("0")
+        .maximumValue("65535")
+        .description("UDP data port to listen");
+      }
 
-			//! Update internal state with new parameter values.
-			void
-			onUpdateParameters(void)
-			{
-				if (m_sock)
-				{
-					if (paramChanged(m_args.sock_addr))
-					{
-						throw RestartNeeded(DTR("restarting to change UDP Port"), 1);
-					}
-				}
-			}
+      //! Update internal state with new parameter values.
+      void
+      onUpdateParameters(void)
+      {
+        if (m_sock)
+        {
+          if (paramChanged(m_args.sock_addr))
+          {
+            throw RestartNeeded(DTR("restarting to change UDP Port"), 1);
+          }
+        }
+      }
 
-			//! Acquire resources.
-			void
-			onResourceAcquisition(void)
-			{
-				m_sock = new DUNE::Network::UDPSocket();
-			}
+      //! Acquire resources.
+      void
+      onResourceAcquisition(void)
+      {
+        m_sock = new DUNE::Network::UDPSocket();
+      }
 
-			//! Initialize resources.
-			void
-			onResourceInitialization(void)
-			{
-				if (m_sock)
-				{
-					m_sock->bind(m_args.sock_addr);
-				}
-			}
+      //! Initialize resources.
+      void
+      onResourceInitialization(void)
+      {
+        if (m_sock)
+        {
+          m_sock->bind(m_args.sock_addr);
+        }
+      }
 
-			//! Release resources.
-			void
-			onResourceRelease(void)
-			{
-				Memory::clear(m_sock);
-			}
+      //! Release resources.
+      void
+      onResourceRelease(void)
+      {
+        Memory::clear(m_sock);
+      }
 
-			void
-			checkIncomingData()
-			{
-				Address dummy;
-				try
-				{
-					if (Poll::poll(*m_sock, 0.01))
-					{
-						size_t n = m_sock->read(m_buf, sizeof(m_buf), &dummy);
+      void
+      checkIncomingData()
+      {
+        Address dummy;
+        try
+        {
+          if (Poll::poll(*m_sock, 0.01))
+          {
+            size_t n = m_sock->read(m_buf, sizeof(m_buf), &dummy);
 
-						if (n > 0)
-						{
-							IMC::DevDataText msg;
-							msg.value = std::string((char *) m_buf, n);
-							dispatch(msg);
-						}
-					}
-				}
-				catch (std::runtime_error& e)
-				{
-					this->err(DTR("Read error: %s"), e.what());
-				}
-			}
+            if (n > 0)
+            {
+              IMC::DevDataText msg;
+              msg.value = std::string((char *) m_buf, n);
+              dispatch(msg);
+            }
+          }
+        }
+        catch (std::runtime_error& e)
+        {
+          this->err(DTR("Read error: %s"), e.what());
+        }
+      }
 
-			//! Main loop.
-			void
-			onMain(void)
-			{
-				while (!stopping())
-				{
-					checkIncomingData();
-					waitForMessages(0.5);
-				}
-			}
-		};
-	}
+       //! Main loop.
+      void
+      onMain(void)
+      {
+        while (!stopping())
+        {
+          checkIncomingData();
+          waitForMessages(0.5);
+        }
+      }
+    };
+  }
 }
 
 DUNE_TASK
