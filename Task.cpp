@@ -53,12 +53,11 @@ namespace Monitors
       //! Task arguments
       Arguments m_args;
       //! UDP socket.
-      DUNE::Network::UDPSocket* m_sock = NULL;
-      //! UDP message buffer.
-      uint8_t m_buf[1024];
+      DUNE::Network::UDPSocket* m_sock;
 
       Task(const std::string& name, Tasks::Context& ctx):
-      DUNE::Tasks::Task(name, ctx)
+        DUNE::Tasks::Task(name, ctx),
+        m_sock(NULL)
       {
         param("UDP Data Port", m_args.sock_addr)
         .defaultValue("11223")
@@ -108,23 +107,25 @@ namespace Monitors
       checkIncomingData()
       {
         Address dummy;
+        //! UDP message buffer.
+        uint8_t buf[1024];
         try
         {
           if (Poll::poll(*m_sock, 0.01))
           {
-            size_t n = m_sock->read(m_buf, sizeof(m_buf), &dummy);
+            size_t n = m_sock->read(buf, (sizeof(buf) / sizeof(buf[0])) , &dummy);
 
             if (n > 0)
             {
               IMC::DevDataText msg;
-              msg.value = std::string((char *) m_buf, n);
+              msg.value = std::string((char *) buf, n);
               dispatch(msg);
             }
           }
         }
         catch (std::runtime_error& e)
         {
-          this->err(DTR("Read error: %s"), e.what());
+          err(DTR("Read error: %s"), e.what());
         }
       }
 
